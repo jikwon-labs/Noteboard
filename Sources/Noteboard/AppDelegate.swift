@@ -7,6 +7,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var statusItem: StatusItemController!
     private var settings: SettingsWindowController?
     private var observers: [NSObjectProtocol] = []
+    /// 업데이트 설치로 다시 시작하거나 맥을 끌 때는 종료 확인을 묻지 않는다.
+    private var skipQuitConfirmation = false
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         if let dir = ProcessInfo.processInfo.environment["NOTEBOARD_SNAPSHOT_DIR"] {
@@ -27,6 +29,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         observers.append(NotificationCenter.default.addObserver(forName: .shortcutsChanged, object: nil, queue: .main) { [weak self] _ in
             self?.registerHotKey()
             MainMenu.applyShortcuts()
+        })
+
+        updater.onWillRelaunch = { [weak self] in self?.skipQuitConfirmation = true }
+        observers.append(NSWorkspace.shared.notificationCenter.addObserver(forName: NSWorkspace.willPowerOffNotification,
+                                                                            object: nil, queue: .main) { [weak self] _ in
+            self?.skipQuitConfirmation = true
         })
 
         LoginItem.enableOnFirstLaunchIfInstalled()
@@ -60,6 +68,25 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool { false }
+
+    /// ⌘Q 나 메뉴의 "종료"로 끌 때 한 번 묻는다. 끄면 전역 단축키도 멈추기 때문이다.
+    func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
+        if skipQuitConfirmation { return .terminateNow }
+        NSApp.activate()
+        if !NSApp.isActive { NSApp.activate(ignoringOtherApps: true) }
+        return Self.makeQuitAlert().runModal() == .alertFirstButtonReturn ? .terminateNow : .terminateCancel
+    }
+
+    static func makeQuitAlert() -> NSAlert {
+        let alert = NSAlert()
+        alert.messageText = "noteboard를 종료할까요?"
+        alert.alertStyle = .informational
+        alert.window.appearance = NSAppearance(named: .darkAqua)
+        alert.addButton(withTitle: "종료")
+        let cancel = alert.addButton(withTitle: "취소")
+        cancel.keyEquivalent = "\u{1b}"
+        return alert
+    }
 
     func applicationWillTerminate(_ notification: Notification) {
         NoteCenter.shared.flushAll()

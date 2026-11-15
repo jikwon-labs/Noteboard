@@ -14,6 +14,8 @@ final class UpdaterController: NSObject, ObservableObject, SPUUpdaterDelegate, S
     @Published private(set) var missingToken = false
 
     private var controller: SPUStandardUpdaterController?
+    /// 업데이트를 설치하려고 앱을 다시 시작하기 직전(종료 확인을 건너뛰게 한다).
+    var onWillRelaunch: (() -> Void)?
 
     override init() {
         super.init()
@@ -80,6 +82,10 @@ final class UpdaterController: NSObject, ObservableObject, SPUUpdaterDelegate, S
     func updaterDidNotFindUpdate(_ updater: SPUUpdater) {
         NSLog("noteboard: 최신 버전이다")
         setAvailable(nil)
+    }
+
+    func updaterWillRelaunchApplication(_ updater: SPUUpdater) {
+        onWillRelaunch?()
     }
 
     func updater(_ updater: SPUUpdater, didAbortWithError error: Error) {
