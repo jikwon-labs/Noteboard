@@ -3,13 +3,13 @@
   <channel>
     <title>noteboard</title>
     <item>
-      <title>noteboard 1.0.0</title>
-      <pubDate>Sun, 15 Nov 2026 16:32:40 +0000</pubDate>
-      <sparkle:version>2</sparkle:version>
-      <sparkle:shortVersionString>1.0.0</sparkle:shortVersionString>
+      <title>noteboard 1.0.1</title>
+      <pubDate>Sun, 15 Nov 2026 16:47:56 +0000</pubDate>
+      <sparkle:version>6</sparkle:version>
+      <sparkle:shortVersionString>1.0.1</sparkle:shortVersionString>
       <sparkle:minimumSystemVersion>15.0</sparkle:minimumSystemVersion>
-      <description><![CDATA[<ul><li>feat: 비공개 레포에서 업데이트 받기</li><li>feat: noteboard 첫 버전</li></ul>]]></description>
-      <enclosure url="https://api.github.com/repos/jikwon-labs/Noteboard/releases/assets/751605301" sparkle:edSignature="8oxqeuBl8eCidb6ah4dPKH9rI6P4vXB7KJl5oXePGVnKuOF5JrW4jqFc0gcv77RLcjp309zFzyyLR7ogy7+DBg==" length="1501976" type="application/octet-stream"/>
+      <description><![CDATA[<ul><li>feat: ⌘Q 로 끌 때 종료 확인 창</li><li>fix: 사이드바 검색이 지우기 버튼·접근성 입력에도 갱신되게</li></ul>]]></description>
+      <enclosure url="https://api.github.com/repos/jikwon-labs/Noteboard/releases/assets/751648035" sparkle:edSignature="gAfBHc0drpE4oJo/HiZZCLI6wdvWRh0WXPeD+APZ/NVGUIqPYIJzVsjZ3FsgqTnkc3a7sBRTmmC9/4NZkeShAA==" length="1505867" type="application/octet-stream"/>
     </item>
   </channel>
 </rss>
