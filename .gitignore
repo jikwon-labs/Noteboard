@@ -1,0 +1,10 @@
+.build/
+build/
+.swiftpm/
+.tools/
+*.xcodeproj
+PLAN*.md
+REPORT*.md
+.DS_Store
+.claude/worktree/
+.claude/settings.local.json
