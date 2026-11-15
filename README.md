@@ -42,22 +42,17 @@ scripts/bundle.sh          # 서명된 build/Noteboard.app (NOTARIZE=1 이면 �
 
 ## 배포
 
-코드 레포는 비공개라 앱이 로그인 없이 업데이트를 받을 수 없다. 그래서 zip 과 `appcast.xml` 은 **공개 릴리스 레포**(`jikwon-labs/Noteboard-releases`)에 올리고, 앱은 그 레포의 최신 릴리스에 붙은 `appcast.xml` 을 본다.
+레포가 비공개라 업데이트도 이 레포 안에서 돈다.
 
-처음 한 번:
-
-```bash
-gh repo create jikwon-labs/Noteboard-releases --public --description "noteboard 릴리스"
-scripts/sparkle-keys.sh    # 업데이트 서명 키(비밀 키는 키체인, 공개 키는 Resources/SparklePublicKey.txt)
-git add Resources/SparklePublicKey.txt && git commit -m "chore: Sparkle 공개 키" && git push
-```
+- zip 은 이 레포의 GitHub 릴리스에 올리고, `appcast.xml` 은 main 에 커밋한다.
+- 앱은 `raw.githubusercontent.com/jikwon-labs/Noteboard/main/appcast.xml` 과 릴리스 첨부 파일을 **이 맥에 로그인된 `gh` 의 토큰**을 붙여 받는다(토큰은 앱에 넣지 않고 그때그때 `gh auth token` 으로 읽는다). 그래서 업데이트를 받을 맥에는 `gh auth login` 이 되어 있어야 한다.
 
 배포할 때마다:
 
 ```bash
-scripts/release.sh 1.0.0             # 시험 → 서명·공증 → appcast 서명 → 커밋·태그·push → 릴리스
-DRY_RUN=1 scripts/release.sh 1.0.0   # 커밋·push·릴리스 없이 build/ 까지만
+scripts/release.sh 1.0.1             # 시험 → 서명·공증 → zip 서명 → 커밋·태그·push → 릴리스 → appcast.xml 갱신
+DRY_RUN=1 scripts/release.sh 1.0.1   # 커밋·push·릴리스 없이 build/ 까지만
 ```
 
-공증 계정은 `xcrun notarytool store-credentials` 로 저장한 프로필을 쓴다(기본 `symboard-notary`, `NOTARY_PROFILE` 로 바꿀 수 있다).
-Sparkle 비밀 키를 잃어버리면 기존 설치본에 업데이트를 보낼 수 없으니 `generate_keys -x` 로 백업해 둔다.
+- 공증 계정은 `xcrun notarytool store-credentials` 로 저장한 프로필을 쓴다(기본 `symboard-notary`, `NOTARY_PROFILE` 로 바꿀 수 있다).
+- Sparkle 비밀 키는 로그인 키체인에 있다(`scripts/sparkle-keys.sh` 로 만들었다). 잃어버리면 기존 설치본에 업데이트를 보낼 수 없으니 `.tools/sparkle-*/bin/generate_keys -x <파일>` 로 백업해 둔다.

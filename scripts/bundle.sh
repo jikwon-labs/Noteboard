@@ -9,9 +9,9 @@ VERSION="$(sed -nE 's/.*version = "([0-9]+\.[0-9]+\.[0-9]+)".*/\1/p' Sources/Not
 if [ -z "$VERSION" ]; then echo "Version.swift 에서 버전을 읽지 못했다" >&2; exit 1; fi
 BUILD="$(git rev-list --count HEAD 2>/dev/null || echo 1)"
 
-# 업데이트 정보(appcast)를 받는 주소. 코드 레포가 비공개라 공개 릴리스 레포에 올린다(scripts/release.sh).
-RELEASE_REPO="${RELEASE_REPO:-jikwon-labs/Noteboard-releases}"
-FEED_URL="${FEED_URL:-https://github.com/$RELEASE_REPO/releases/latest/download/appcast.xml}"
+# 업데이트 정보(appcast)를 받는 주소: 레포 main 의 appcast.xml(scripts/release.sh 가 갱신).
+# 레포가 비공개라 앱은 gh 토큰을 붙여 요청한다(UpdaterController).
+FEED_URL="${FEED_URL:-https://raw.githubusercontent.com/jikwon-labs/Noteboard/main/appcast.xml}"
 # Sparkle 서명 공개 키(scripts/sparkle-keys.sh 가 만든다). 없으면 업데이트 기능이 꺼진 채로 빌드된다.
 PUBLIC_KEY="$(tr -d '[:space:]' < Resources/SparklePublicKey.txt 2>/dev/null || true)"
 

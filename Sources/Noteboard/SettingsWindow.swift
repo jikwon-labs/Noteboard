@@ -197,6 +197,8 @@ struct SettingsView: View {
                             Text("새 버전 \(version)이 있습니다").font(.caption).foregroundStyle(.secondary)
                         } else if !updater.isAvailable {
                             Text("개발 빌드에서는 업데이트를 쓸 수 없습니다").font(.caption).foregroundStyle(.secondary)
+                        } else if updater.missingToken {
+                            Text("업데이트를 받으려면 터미널에서 gh auth login 이 필요합니다").font(.caption).foregroundStyle(.orange)
                         }
                     }
                 }
