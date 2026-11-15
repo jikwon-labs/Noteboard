@@ -78,6 +78,53 @@ enum SelfTest {
         let narrow = b.window?.frame.width ?? 0
         check(abs((wide - narrow) - WindowGeometry.sidebarWidth) < 1, "사이드바를 열면 창이 220pt 넓어진다 (\(wide) → \(narrow))")
 
+        // 7-1. 사이드바 검색: 실제 키 입력과 같은 경로(필드 편집기에 글자 넣기)로 걸러지는지.
+        try? Data("장보기 목록\n우유, 계란".utf8).write(to: folder.appendingPathComponent("장보기.txt"))
+        center.reload()
+        b.setSidebar(visible: true)
+        b.window?.makeFirstResponder(b.sidebarView.searchField)
+        if let editor = b.sidebarView.searchField.currentEditor() as? NSTextView {
+            editor.insertText("우유", replacementRange: editor.selectedRange())
+        }
+        check(b.sidebarView.visibleTitles == ["장보기"], "검색어를 치면 목록이 걸러진다: \(b.sidebarView.visibleTitles)")
+        b.sidebarView.searchField.stringValue = ""
+        b.sidebarView.searchField.sendAction(b.sidebarView.searchField.action, to: b.sidebarView.searchField.target)
+        check(b.sidebarView.visibleTitles.count == 2, "검색어를 지우면 다시 다 보인다: \(b.sidebarView.visibleTitles)")
+        b.setSidebar(visible: false)
+        try? FileManager.default.removeItem(at: folder.appendingPathComponent("장보기.txt"))
+        center.reload()
+
+        // 7-2. 메뉴 단축키: 설정의 단축키가 메뉴 항목에 붙어 있고, 그 항목이 창의 동작으로 이어지는지.
+        // (시험 중에는 앱이 비활성이라 키 창이 없어서 키 이벤트 대신 메뉴 항목을 찾아 그 동작을 보낸다.)
+        let menu = MainMenu.build()
+        func menuItem(for shortcut: Shortcut) -> NSMenuItem? {
+            var found: NSMenuItem?
+            func walk(_ m: NSMenu) {
+                for item in m.items {
+                    if item.keyEquivalent == shortcut.key, item.keyEquivalentModifierMask == MainMenu.modifierFlags(shortcut) { found = item }
+                    if let sub = item.submenu { walk(sub) }
+                }
+            }
+            walk(menu)
+            return found
+        }
+        for (action, expectVisible) in [(ShortcutAction.toggleSidebar, true), (.togglePreview, true), (.toggleFloating, !b.isFloating)] {
+            let shortcut = Preferences.shared.shortcut(action)
+            guard let item = menuItem(for: shortcut), let selector = item.action else {
+                check(false, "\(shortcut.display) 메뉴 항목이 있다")
+                continue
+            }
+            b.perform(selector, with: item)
+            let state: Bool
+            switch action {
+            case .toggleSidebar: state = b.isSidebarVisible
+            case .togglePreview: state = b.isPreviewing
+            default: state = b.isFloating
+            }
+            check(state == expectVisible, "\(shortcut.display) → \(item.title)")
+            b.perform(selector, with: item)
+        }
+
         // 8. 쓰다가 전부 지우고 닫으면 파일이 지워진다.
         let c = center.newNote()
         c.editorTextView.insertText("잠깐 쓴 글", replacementRange: NSRange(location: 0, length: 0))

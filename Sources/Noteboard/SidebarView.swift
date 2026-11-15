@@ -27,6 +27,9 @@ final class SidebarView: NSView, NSTableViewDataSource, NSTableViewDelegate, NSS
         searchField.placeholderString = "제목, 날짜, 내용 검색"
         searchField.delegate = self
         searchField.sendsSearchStringImmediately = true
+        // 키 입력 신호(controlTextDidChange) 외에 검색 동작으로도 목록을 갱신한다(지우기 버튼, 접근성 입력 등).
+        searchField.target = self
+        searchField.action = #selector(searchChanged(_:))
         searchField.focusRingType = .default
         searchField.font = .systemFont(ofSize: 12)
         searchField.setAccessibilityLabel("노트 검색")
@@ -128,6 +131,13 @@ final class SidebarView: NSView, NSTableViewDataSource, NSTableViewDelegate, NSS
         tableView.selectRowIndexes(IndexSet(integer: row), byExtendingSelection: false)
         tableView.scrollRowToVisible(row)
     }
+
+    @objc private func searchChanged(_ sender: Any?) {
+        reload()
+    }
+
+    /// 자가 시험용: 지금 목록에 보이는 노트 제목들.
+    var visibleTitles: [String] { items.map(\.displayTitle) }
 
     func focusSearch() {
         window?.makeFirstResponder(searchField)
